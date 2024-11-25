@@ -36,6 +36,7 @@ def imread_for_albu(
         height=512, 
         width=384,
 ):
+    p = os.path.normpath(p)
     img = cv2.imread(p)
     if use_resize:
         img = cv2.resize(img, (width, height))

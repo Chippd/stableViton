@@ -142,3 +142,62 @@ If you find our work useful for your research, please cite us:
 
 ## License
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
+
+## Chris's Notes
+### Setting up Test Images for Inference
+When running inference, pay careful attention to:
+
+1. Directory Structure:
+```
+test-small/
+├── test_pairs.txt
+└── test/
+    ├── cloth/
+    │   ├── [original_garment].jpg    # Original garment worn by person
+    │   └── [target_garment].jpg      # Target garment to try on
+    ├── cloth-mask/
+    │   ├── [original_garment].jpg    # Mask of original garment
+    │   └── [target_garment].jpg      # Mask of target garment
+    ├── image/
+    │   └── [person].jpg              # Person wearing original garment
+    ├── image-densepose/
+    │   └── [person].jpg              # Densepose map of person
+    ├── agnostic-v3.2/
+    │   └── [person].jpg              # Person with clothing removed
+    └── agnostic-mask/
+        └── [person].jpg              # Mask of person
+```
+
+2. test_pairs.txt Format:
+```
+[person_image].jpg [target_garment].jpg
+```
+Example:
+```
+00006_00.jpg 00126_00.jpg  # Try 00126_00 garment on person 00006_00
+00008_00.jpg 00126_00.jpg  # Try same garment on different person
+```
+
+3. Key Requirements:
+- Each person needs their original garment in cloth/ and cloth-mask/
+- Target garment (to try on) must also be in cloth/ and cloth-mask/
+- Filenames in agnostic-mask/ should match person image names (no _mask suffix)
+- All corresponding files must have identical filenames across their directories
+
+4. Running Inference:
+```batch
+python inference.py ^
+--config_path ./configs/VITONHD.yaml ^
+--batch_size 3 ^
+--model_load_path ./ckpts/VITONHD.ckpt ^
+--data_root_dir ./test-small ^
+--save_dir ./results
+```
+
+Add --unpair flag to try every garment on every person, or --repaint to preserve unmasked regions.
+
+Common issues:
+- Windows path separators (use forward slashes or os.path.join)
+- Missing corresponding files across directories
+- Incorrect file naming in test_pairs.txt
+- Missing original garments for input images
